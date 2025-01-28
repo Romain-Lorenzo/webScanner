@@ -13,6 +13,14 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
     const tlsGradeElement = document.getElementById("tls-grade");
     const tlsLetterGradeElement = document.getElementById("tls-lettergrade");
 
+    // Server-related elements
+    const serverIpElement = document.getElementById("server-ip");
+    const serverCityElement = document.getElementById("server-city");
+    const serverCountryNameElement = document.getElementById("server-country-name");
+    const serverCountryCapitalElement = document.getElementById("server-country-capital");
+    const serverCountryPopulationElement = document.getElementById("server-country-population");
+    const serverCurrencyNameElement = document.getElementById("server-currency-name");
+
     // Reset and show loading states
     resultElement.textContent = "Loading...";
     domainCountElement.textContent = "Number of domains: 0";
@@ -24,33 +32,45 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
     tlsGradeElement.textContent = "Loading...";
     tlsLetterGradeElement.textContent = "Loading...";
 
+    serverIpElement.textContent = "Loading...";
+    serverCityElement.textContent = "Loading...";
+    serverCountryNameElement.textContent = "Loading...";
+    serverCountryCapitalElement.textContent = "Loading...";
+    serverCountryPopulationElement.textContent = "Loading...";
+    serverCurrencyNameElement.textContent = "Loading...";
+
     try {
-        // Perform the security scan
+        // Perform all API queries simultaneously
         const scanResponse = fetch(`/api/scan`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: urlInput }),
         });
 
-        // Fetch domain data from crt.sh
         const domainResponse = fetch(`/api/domains`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ domain: new URL(urlInput).hostname }),
         });
 
-        // Fetch TLS information
         const tlsResponse = fetch(`/api/tls`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: urlInput }),
         });
 
-        // Await all responses simultaneously
-        const [scanData, domainData, tlsData] = await Promise.all([
+        const serverInfoResponse = fetch(`/api/server-info`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: urlInput }),
+        });
+
+        // Await all responses
+        const [scanData, domainData, tlsData, serverInfoData] = await Promise.all([
             (await scanResponse).json(),
             (await domainResponse).json(),
             (await tlsResponse).json(),
+            (await serverInfoResponse).json(),
         ]);
 
         // Display security scan result
@@ -77,13 +97,34 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
             tlsGradeElement.textContent = "Grade data not available.";
             tlsLetterGradeElement.textContent = "Letter grade data not available.";
         }
+
+        // Display server info
+        if (serverInfoData) {
+            serverIpElement.textContent = serverInfoData.ip || "N/A";
+            serverCityElement.textContent = serverInfoData.city || "N/A";
+            serverCountryNameElement.textContent = serverInfoData.country_name || "N/A";
+            serverCountryCapitalElement.textContent = serverInfoData.country_capital || "N/A";
+            serverCountryPopulationElement.textContent = serverInfoData.country_population
+                ? serverInfoData.country_population.toLocaleString()
+                : "N/A";
+            serverCurrencyNameElement.textContent = serverInfoData.currency_name || "N/A";
+        } else {
+            resultElement.textContent = "Server info not available.";
+        }
     } catch (error) {
-        // Handle errors for each request
+        // Handle errors for all requests
         resultElement.textContent = `Error: ${error.message}`;
         domainCountElement.textContent = "N/A";
         tlsAnalyzerElement.textContent = `Error: ${error.message}`;
         tlsGradeElement.textContent = "N/A";
         tlsLetterGradeElement.textContent = "N/A";
+        serverIpElement.textContent = "Error fetching IP data.";
+        serverCityElement.textContent = "N/A";
+        serverCountryNameElement.textContent = "N/A";
+        serverCountryCapitalElement.textContent = "N/A";
+        serverCountryPopulationElement.textContent = "N/A";
+        serverCurrencyNameElement.textContent = "N/A";
+        
     }
 });
 

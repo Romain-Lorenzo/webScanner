@@ -1,6 +1,6 @@
-import os
 from flask import Flask, render_template, request, jsonify
 from requests import get
+import requests
 
 app = Flask(__name__)
 
@@ -91,3 +91,38 @@ def api_tls():
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch TLS data: {str(e)}"}), 500
+    
+@app.route('/api/server-info', methods=['POST'])
+def api_server_info():
+    data = request.get_json()
+    if not data or "url" not in data:
+        return jsonify({"error": "Missing 'url' in request data"}), 400
+
+    url = data["url"]
+
+    try:
+        # Step 1: Retrieve the IP address using Web-Check's DNS API
+        dns_response = requests.get(f"http://webcheck:3000/api/dns?url={url}", timeout=10)
+        dns_response.raise_for_status()
+        dns_data = dns_response.json()
+
+        # Extract IP address from the 'A' object if it exists
+        ip_address = None
+        if "A" in dns_data and isinstance(dns_data["A"], dict) and "address" in dns_data["A"]:
+            ip_address = dns_data["A"]["address"]
+        elif "address" in dns_data:  # Fallback in case structure changes
+            ip_address = dns_data["address"]
+
+        if not ip_address:
+            return jsonify({"error": "Failed to retrieve IP address."}), 404
+
+        # Step 2: Query ipapi.co with the IP address
+        ipapi_response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=10)
+        ipapi_response.raise_for_status()
+        server_info = ipapi_response.json()
+
+        # Return the server info
+        return jsonify(server_info)
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Failed to fetch server info: {str(e)}"}), 500
