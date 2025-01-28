@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Security Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Security Checker</h1>
+    <form id="check-form">
+        <label for="url">Enter Website URL:</label>
+        <input type="url" id="url" required placeholder="https://example.com">
+        <button type="submit">Check</button>
+    </form>
+    <h2>Security Report:</h2>
+    <pre id="result">Awaiting input...</pre>
+    <script src="/static/script.js"></script>
+</body>
+</html>

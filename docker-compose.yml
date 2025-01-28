@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  scanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 80:5000
+    volumes:
+      - ./app.py:/opt/app/app.py
+      - ./static:/opt/app/static
+      - ./templates:/opt/app/templates
+  
+  webcheck:
+    image: lissy93/web-check
+    ports:
+      - 3000:3000

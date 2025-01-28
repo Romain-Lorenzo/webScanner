@@ -1,0 +1,46 @@
+name: Build, push and deploy (STAGING)
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  # Build containers
+  build-container:
+    uses: ./.github/workflows/build.yml
+    with:
+      IMAGE: www-scanner
+      TAG: staging
+      DOCKERFILE: Dockerfile
+      CONTEXT: .
+      CACHE: true
+    secrets:
+      PRIVATE_REGISTRY_TOKEN: ${{ secrets.PRIVATE_REGISTRY_TOKEN }}
+
+  # codeql:
+  #   uses: ./.github/workflows/codeql.yml
+  #   permissions:
+  #     actions: read
+  #     contents: read
+  #     security-events: write
+
+  # Push container
+  push-container:
+    needs: build-container
+    uses: ./.github/workflows/push.yml
+    with:
+      IMAGE: www-scanner
+      TAG: staging
+      DOCKERFILE: Dockerfile
+      CONTEXT: .
+    secrets:
+      PRIVATE_REGISTRY_TOKEN: ${{ secrets.PRIVATE_REGISTRY_TOKEN }}
+
+  # Deploy to staging
+  deploy:
+    needs: push-container
+    uses: ./.github/workflows/deploy.yml
+    with:
+      NAMESPACE: www
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG_STAGING }}
