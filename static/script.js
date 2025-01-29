@@ -21,6 +21,11 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
     const serverCountryPopulationElement = document.getElementById("server-country-population");
     const serverCurrencyNameElement = document.getElementById("server-currency-name");
 
+    // Security check elements
+    const securityScoreElement = document.getElementById("security-score");
+    const securityDetailsElement = document.getElementById("security-details");
+    const toggleSecurityDetailsBtn = document.getElementById("toggle-security-details")
+
     // Reset and show loading states
     resultElement.textContent = "Loading...";
     domainCountElement.textContent = "Number of domains: 0";
@@ -38,6 +43,11 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
     serverCountryCapitalElement.textContent = "Loading...";
     serverCountryPopulationElement.textContent = "Loading...";
     serverCurrencyNameElement.textContent = "Loading...";
+
+    securityScoreElement.textContent = "Loading...";
+    securityDetailsElement.innerHTML = "";
+    securityDetailsElement.style.display = "none";
+    toggleSecurityDetailsBtn.style.display = "none";
 
     try {
         // Perform all API queries simultaneously
@@ -65,12 +75,19 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
             body: JSON.stringify({ url: urlInput }),
         });
 
+        const securityResponse = fetch(`/api/security`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: urlInput }),
+        });
+
         // Await all responses
-        const [scanData, domainData, tlsData, serverInfoData] = await Promise.all([
+        const [scanData, domainData, tlsData, serverInfoData, securityData] = await Promise.all([
             (await scanResponse).json(),
             (await domainResponse).json(),
             (await tlsResponse).json(),
             (await serverInfoResponse).json(),
+            (await securityResponse).json(),
         ]);
 
         // Display security scan result
@@ -111,6 +128,16 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
         } else {
             resultElement.textContent = "Server info not available.";
         }
+    
+        // Display security score and details
+        if (securityData && securityData.score) {
+            securityScoreElement.textContent = `Security Score: ${securityData.score}`;
+            securityDetailsElement.textContent = JSON.stringify(securityData.report, null, 2);
+            toggleSecurityDetailsBtn.style.display = "block"; // Show button
+        } else {
+            securityScoreElement.textContent = "Security data not available.";
+        }
+
     } catch (error) {
         // Handle errors for all requests
         resultElement.textContent = `Error: ${error.message}`;
@@ -124,7 +151,8 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
         serverCountryCapitalElement.textContent = "N/A";
         serverCountryPopulationElement.textContent = "N/A";
         serverCurrencyNameElement.textContent = "N/A";
-        
+        securityScoreElement.textContent = "Error fetching security data.";
+        securityDetailsElement.textContent = "N/A";
     }
 });
 
@@ -133,6 +161,14 @@ document.getElementById("show-details-btn").addEventListener("click", () => {
     const domainDetailsElement = document.getElementById("domain-details");
     domainDetailsElement.style.display = domainDetailsElement.style.display === "none" ? "block" : "none";
 });
+
+// Toggle security details visibility
+document.getElementById("toggle-security-details").addEventListener("click", () => {
+    const securityDetailsElement = document.getElementById("security-details");
+    securityDetailsElement.style.display = securityDetailsElement.style.display === "none" ? "block" : "none";
+    
+});
+
 
 // WHOIS information fetch and toggle visibility
 document.getElementById("whois-btn").addEventListener("click", async () => {

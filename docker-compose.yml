@@ -1,35 +1,16 @@
 services:
-  api_internal:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - EXTERNAL_API_URL=https://webcheck:3000  # L'URL de l'API externe
-    networks:
-      - app_network
   scanner:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - 80:5000
-    environment:
-      - EXTERNAL_API_URL=https://webcheck:3000  # L'URL de l'API externe
     volumes:
       - ./app.py:/opt/app/app.py
       - ./static:/opt/app/static
       - ./templates:/opt/app/templates
-    networks:
-      - app_network
   
   webcheck:
     image: lissy93/web-check
     ports:
       - 3000:3000
-    environment:
-      - EXTERNAL_API_URL=https://webcheck:3000  # L'URL de l'API externe
-    networks:
-      - app_network
-networks:
-  app_network:  # Définition du réseau 'app_network'
-    driver: bridge  # Utilisation du driver par défaut 'bridge'

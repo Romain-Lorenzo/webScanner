@@ -126,3 +126,44 @@ def api_server_info():
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"Failed to fetch server info: {str(e)}"}), 500
+    
+@app.route('/api/security', methods=['POST'])
+def api_security():
+    data = request.get_json()
+    if not data or "url" not in data:
+        return jsonify({"error": "Missing 'url' in request data"}), 400
+
+    url = data["url"]
+    
+    try:
+        # Call Web-Check Security API
+        response = requests.get(f"http://webcheck:3000/api/http-security?url={url}", timeout=10)
+        response.raise_for_status()
+        security_report = response.json()
+
+        # Calculate security score
+        score = calculate_security_score(security_report)
+
+        return jsonify({
+            "url": url,
+            "score": score,
+            "report": security_report
+        })
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Failed to fetch security report: {str(e)}"}), 500
+
+
+# Function to calculate security score
+def calculate_security_score(report):
+    if not isinstance(report, dict):
+        return "Unknown"
+
+    false_count = sum(1 for value in report.values() if value is False)
+
+    if false_count <= 2:
+        return "OK"
+    elif false_count == 3:
+        return "MOYEN"
+    else:  # 4 or more
+        return "KO"
