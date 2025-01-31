@@ -17,8 +17,7 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
     const serverIpElement = document.getElementById("server-ip");
     const serverCityElement = document.getElementById("server-city");
     const serverCountryNameElement = document.getElementById("server-country-name");
-    const serverCountryCapitalElement = document.getElementById("server-country-capital");
-    const serverCountryPopulationElement = document.getElementById("server-country-population");
+    const serverContinentElement = document.getElementById("server-continent-name");  
     const serverCurrencyNameElement = document.getElementById("server-currency-name");
 
     // Security check elements
@@ -40,8 +39,7 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
     serverIpElement.textContent = "Loading...";
     serverCityElement.textContent = "Loading...";
     serverCountryNameElement.textContent = "Loading...";
-    serverCountryCapitalElement.textContent = "Loading...";
-    serverCountryPopulationElement.textContent = "Loading...";
+    serverContinentElement.textContent = "Loading...";;
     serverCurrencyNameElement.textContent = "Loading...";
 
     securityScoreElement.textContent = "Loading...";
@@ -117,14 +115,11 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
 
         // Display server info
         if (serverInfoData) {
-            serverIpElement.textContent = serverInfoData.ip || "N/A";
-            serverCityElement.textContent = serverInfoData.city || "N/A";
-            serverCountryNameElement.textContent = serverInfoData.country_name || "N/A";
-            serverCountryCapitalElement.textContent = serverInfoData.country_capital || "N/A";
-            serverCountryPopulationElement.textContent = serverInfoData.country_population
-                ? serverInfoData.country_population.toLocaleString()
-                : "N/A";
-            serverCurrencyNameElement.textContent = serverInfoData.currency_name || "N/A";
+            serverIpElement.textContent = serverInfoData.ipAddress || "N/A";
+            serverCityElement.textContent = serverInfoData.cityName || "N/A";
+            serverCountryNameElement.textContent = serverInfoData.countryName || "N/A";
+            serverContinentElement.textContent = serverInfoData.continent || "N/A";
+            serverCurrencyNameElement.textContent = serverInfoData.currency?.name || "N/A";
         } else {
             resultElement.textContent = "Server info not available.";
         }
@@ -148,8 +143,7 @@ document.getElementById("check-form").addEventListener("submit", async (e) => {
         serverIpElement.textContent = "Error fetching IP data.";
         serverCityElement.textContent = "N/A";
         serverCountryNameElement.textContent = "N/A";
-        serverCountryCapitalElement.textContent = "N/A";
-        serverCountryPopulationElement.textContent = "N/A";
+        serverContinentElement.textContent = "N/A";
         serverCurrencyNameElement.textContent = "N/A";
         securityScoreElement.textContent = "Error fetching security data.";
         securityDetailsElement.textContent = "N/A";
@@ -168,7 +162,6 @@ document.getElementById("toggle-security-details").addEventListener("click", () 
     securityDetailsElement.style.display = securityDetailsElement.style.display === "none" ? "block" : "none";
     
 });
-
 
 // WHOIS information fetch and toggle visibility
 document.getElementById("whois-btn").addEventListener("click", async () => {

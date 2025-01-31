@@ -1,11 +1,17 @@
 from flask import Flask, render_template, request, jsonify
 from requests import get
 import requests
+import os
 
 app = Flask(__name__)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# Get the API URL's from the environment variable
+EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "http://webcheck:3000/api")
+DOMAIN_API_URL = os.getenv("DOMAIN_API_URL", "https://crt.sh")
+IP_CHECKER_URL = os.getenv("IP_CHECKER_URL", "https://freeipapi.com")
 
 @app.route('/api/scan', methods=['POST'])
 def api_scan():
@@ -13,7 +19,7 @@ def api_scan():
     data = request.get_json()
     url = data["url"]
     # Send to web-check
-    response = get(f"http://webcheck:3000/api/firewall?url={url}")
+    response = get(f"{EXTERNAL_API_URL}/firewall?url={url}")
     return response.json()
 
 @app.route('/')
@@ -30,7 +36,7 @@ def api_domains():
     return {"count": len(domains), "domains": domains}
 def get_domains_from_crtsh(domain):
     try:
-        response = get(f"https://crt.sh/?q={domain}&output=json&exclude=expired")
+        response = get(f"{DOMAIN_API_URL}/?q={domain}&output=json&exclude=expired")
         if response.status_code == 200:
             data = response.json()
             # Extract unique domain names from the response
@@ -52,7 +58,7 @@ def api_whois():
 
     # Call the Web-Check API for WHOIS
     try:
-        response = get(f"http://webcheck:3000/api/whois?url={domain}")
+        response = get(f"{EXTERNAL_API_URL}/whois?url={domain}")
         if response.status_code != 200:
             return {"error": f"Web-Check API returned status {response.status_code}"}, response.status_code
         
@@ -69,7 +75,7 @@ def api_tls():
     url = data["url"]
     try:
         # Make the request to the Web-Check TLS API
-        response = get(f"http://webcheck:3000/api/tls?url={url}", timeout=10)
+        response = get(f"{EXTERNAL_API_URL}/tls?url={url}", timeout=10)
         response.raise_for_status()
         tls_data = response.json()  # Parse the response JSON
 
@@ -102,7 +108,7 @@ def api_server_info():
 
     try:
         # Step 1: Retrieve the IP address using Web-Check's DNS API
-        dns_response = requests.get(f"http://webcheck:3000/api/dns?url={url}", timeout=10)
+        dns_response = requests.get(f"{EXTERNAL_API_URL}/dns?url={url}", timeout=10)
         dns_response.raise_for_status()
         dns_data = dns_response.json()
 
@@ -116,8 +122,8 @@ def api_server_info():
         if not ip_address:
             return jsonify({"error": "Failed to retrieve IP address."}), 404
 
-        # Step 2: Query ipapi.co with the IP address
-        ipapi_response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=10)
+        # Step 2: Query freeipapi.com with the IP address
+        ipapi_response = requests.get(f"{IP_CHECKER_URL}/api/json/{ip_address}", timeout=10)
         ipapi_response.raise_for_status()
         server_info = ipapi_response.json()
 
@@ -137,7 +143,7 @@ def api_security():
     
     try:
         # Call Web-Check Security API
-        response = requests.get(f"http://webcheck:3000/api/http-security?url={url}", timeout=10)
+        response = requests.get(f"{EXTERNAL_API_URL}/http-security?url={url}", timeout=10)
         response.raise_for_status()
         security_report = response.json()
 
