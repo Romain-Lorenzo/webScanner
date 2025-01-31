@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 version: '3'
 
+=======
+>>>>>>> main
 services:
   scanner:
     build:
@@ -7,6 +10,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - 80:5000
+<<<<<<< HEAD
+=======
+    environment:
+      - EXTERNAL_API_URL=http://webcheck:3000/api
+      - DOMAIN_API_URL=https://crt.sh
+      - IP_CHECKER_URL=https://freeipapi.com  
+>>>>>>> main
     volumes:
       - ./app.py:/opt/app/app.py
       - ./static:/opt/app/static

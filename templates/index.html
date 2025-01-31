@@ -18,6 +18,18 @@
             padding: 10px;
             border-radius: 5px;
         }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            padding: 5px;
+            background: #f9f9f9;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -27,8 +39,42 @@
         <input type="url" id="url" required placeholder="https://example.com">
         <button type="submit">Check</button>
     </form>
+
     <h2>Security Report:</h2>
     <pre id="result">Awaiting input...</pre>
+
+    <h2>Domain Information:</h2>
+    <p id="domain-count">Number of domains: 0</p>
+    <button id="show-details-btn" style="display: none;">Show Details</button>
+    <ul id="domain-details" style="display: none;"></ul>
+
+    <h2>WHOIS Information:</h2>
+    <button id="whois-btn">Get WHOIS Info</button>
+    <pre id="whois-result" style="display: none;">Click the button to fetch WHOIS data.</pre>
+
+    <h2>SSL/TLS Information:</h2>
+    <div id="tls-result">
+        <p><strong>Analyzer:</strong> <span id="tls-analyzer">Awaiting input...</span></p>
+        <p><strong>Grade:</strong> <span id="tls-grade">Awaiting input...</span></p>
+        <p><strong>Letter Grade:</strong> <span id="tls-lettergrade">Awaiting input...</span></p>
+    </div>
+
+    <h2>Server Location Information:</h2>
+    <div id="server-info">
+        <p>IP Address: <span id="server-ip"></span></p>
+        <p>City: <span id="server-city"></span></p>
+        <p>Country Name: <span id="server-country-name"></span></p>
+        <p>Continent: <span id="server-continent-name"></span></p>
+        <p>Currency Name: <span id="server-currency-name"></span></p>
+    </div>
+
+    <h2>Security Score:</h2>
+    <div id="security-score-result">
+        <span id="security-score">Awaiting input...</span></p>
+        <button id="toggle-security-details" style="display: none;">Show Security Details</button>
+        <pre id="security-details" style="display: none;"></pre>
+    </div>
+
     <script src="/static/script.js"></script>
 </body>
 </html>
