@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify
 from requests import get
 import requests
 import os
+import re
+import time
 
 app = Flask(__name__)
 
@@ -13,11 +15,19 @@ EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "http://webcheck:3000/api")
 DOMAIN_API_URL = os.getenv("DOMAIN_API_URL", "https://crt.sh")
 IP_CHECKER_URL = os.getenv("IP_CHECKER_URL", "https://freeipapi.com")
 
+# Regex pattern to match "https://www.something.xxx"
+URL_REGEX = r"^https:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$"
+
 @app.route('/api/scan', methods=['POST'])
 def api_scan():
     # Get URL
     data = request.get_json()
-    url = data["url"]
+    url = data.get("url", "").strip()  # Remove any leading/trailing spaces
+
+    # Validate the URL with regex
+    if not re.match(URL_REGEX, url):
+        return jsonify({"error": "Invalid URL format. Must start with 'https://' and have a valid domain"}), 400
+
     # Send to web-check
     response = get(f"{EXTERNAL_API_URL}/firewall?url={url}")
     return response.json()
@@ -73,31 +83,41 @@ def api_tls():
         return jsonify({"error": "Missing 'url' in request data"}), 400
 
     url = data["url"]
-    try:
-        # Make the request to the Web-Check TLS API
-        response = get(f"{EXTERNAL_API_URL}/tls?url={url}", timeout=10)
-        response.raise_for_status()
-        tls_data = response.json()  # Parse the response JSON
+    max_retries = 2  # Number of retries
+    delay = 2  # Delay in seconds
 
-        # Find the object where analyzer is "mozillaGradingWorker"
-        analysis = tls_data.get("analysis", [])
-        grading_data = next(
-            (item.get("result") for item in analysis if item.get("analyzer") == "mozillaGradingWorker"),
-            None
-        )
+    for attempt in range(max_retries + 1):  # Try up to 2 retries
+        try:
+            # Make the request to the Web-Check TLS API
+            response = get(f"{EXTERNAL_API_URL}/tls?url={url}", timeout=10)
+            response.raise_for_status()
+            tls_data = response.json()  # Parse the response JSON
 
-        # If grading data is found, extract grade and lettergrade
-        if grading_data:
-            grade = grading_data.get("grade")
-            lettergrade = grading_data.get("lettergrade")
-            return jsonify({"grade": grade, "lettergrade": lettergrade})
+            # Find the object where analyzer is "mozillaGradingWorker"
+            analysis = tls_data.get("analysis", [])
+            grading_data = next(
+                (item.get("result") for item in analysis if item.get("analyzer") == "mozillaGradingWorker"),
+                None
+            )
 
-        # If no relevant data found
-        return jsonify({"error": "Mozilla grading data not found"}), 404
+            if grading_data:
+                return jsonify({
+                    "grade": grading_data.get("grade"),
+                    "lettergrade": grading_data.get("lettergrade")
+                })
 
-    except Exception as e:
-        return jsonify({"error": f"Failed to fetch TLS data: {str(e)}"}), 500
-    
+            # If no relevant data is found, retry after a short delay
+            if attempt < max_retries:
+                time.sleep(delay)
+            else:
+                return jsonify({"error": "Mozilla grading data not available yet, try again later"}), 200  # Changed 404 to 200
+
+        except Exception as e:
+            if attempt < max_retries:
+                time.sleep(delay)  # Wait before retrying
+            else:
+                return jsonify({"error": f"Failed to fetch TLS data: {str(e)}"}), 500  # Keep 500 for real errors
+            
 @app.route('/api/server-info', methods=['POST'])
 def api_server_info():
     data = request.get_json()
