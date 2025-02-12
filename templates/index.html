@@ -4,63 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Security Checker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px 0;
-        }
-        pre {
-            background: #f4f4f4;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        ul li {
-            padding: 5px;
-            background: #f9f9f9;
-            margin-bottom: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-    </style>
 </head>
 <body>
     <h1>Web Security Checker</h1>
     <form id="check-form">
-        <label for="url">Enter Website URL:</label>
+        <label for="url">Enter Website URL</label>
         <input type="url" id="url" required placeholder="https://example.com">
         <button type="submit">Check</button>
     </form>
 
-    <h2>Security Report:</h2>
+    <div class="hidden">
+    <h2>Security Report</h2>
     <pre id="result">Awaiting input...</pre>
+    </div>
 
-    <h2>Domain Information:</h2>
+    <div class="hidden">
+    <h2>Domain Information</h2>
     <p id="domain-count">Number of domains: 0</p>
     <button id="show-details-btn" style="display: none;">Show Details</button>
     <ul id="domain-details" style="display: none;"></ul>
+    </div>
 
-    <h2>WHOIS Information:</h2>
-    <button id="whois-btn">Get WHOIS Info</button>
-    <pre id="whois-result" style="display: none;">Click the button to fetch WHOIS data.</pre>
+    <div class="hidden">
+        <h2>WHOIS Information</h2>
+        <button id="whois-btn">Get WHOIS Info</button>
+        <pre id="whois-result" style="display: none;">Click the button to fetch WHOIS data.</pre>
+    </div>
 
-    <h2>SSL/TLS Information:</h2>
-    <div id="tls-result">
+    <div id="tls-result" class="hidden">
+    <h2>SSL/TLS Information</h2>
         <p><strong>Analyzer:</strong> <span id="tls-analyzer">Awaiting input...</span></p>
         <p><strong>Grade:</strong> <span id="tls-grade">Awaiting input...</span></p>
         <p><strong>Letter Grade:</strong> <span id="tls-lettergrade">Awaiting input...</span></p>
     </div>
 
-    <h2>Server Location Information:</h2>
-    <div id="server-info">
+    <div id="server-info" class="hidden">
+    <h2>Server Location Information</h2>
         <p>IP Address: <span id="server-ip"></span></p>
         <p>City: <span id="server-city"></span></p>
         <p>Country Name: <span id="server-country-name"></span></p>
@@ -68,8 +47,8 @@
         <p>Currency Name: <span id="server-currency-name"></span></p>
     </div>
 
-    <h2>Security Score:</h2>
-    <div id="security-score-result">
+    <div id="security-score-result" class="hidden">
+    <h2>Security Score</h2>
         <span id="security-score">Awaiting input...</span></p>
         <button id="toggle-security-details" style="display: none;">Show Security Details</button>
         <pre id="security-details" style="display: none;"></pre>

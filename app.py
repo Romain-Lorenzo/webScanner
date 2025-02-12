@@ -4,6 +4,7 @@ import requests
 import os
 import re
 import time
+import secrets
 
 app = Flask(__name__)
 
@@ -30,7 +31,22 @@ def api_scan():
 
     # Send to web-check
     response = get(f"{EXTERNAL_API_URL}/firewall?url={url}")
+   
+   # Check if a firewall is detected
+    if response.json().get("firewall") == False:
+        # If no firewall, generate a random string and append it to the URL
+        random_string = secrets.token_urlsafe(6)  # Generate a random string of length 6
+        url_with_random = f"{url}/{random_string}"
+    # Send second request with the modified URL
+        second_response = get(url_with_random)
+    # Check if the word "bunkerweb" is in the response body
+        if "bunkerweb" in second_response.text.lower():
+            return jsonify({"firewall": True, "bunkerity_found": True})
+        else:
+            return jsonify({"firewall": False, "bunkerity_found": False})
+    # If firewall is detected
     return response.json()
+
 
 @app.route('/')
 def home():
@@ -140,7 +156,7 @@ def api_server_info():
             ip_address = dns_data["address"]
 
         if not ip_address:
-            return jsonify({"error": "Failed to retrieve IP address."}), 404
+            return jsonify({"error": "Failed to retrieve IP address."}), 400
 
         # Step 2: Query freeipapi.com with the IP address
         ipapi_response = requests.get(f"{IP_CHECKER_URL}/api/json/{ip_address}", timeout=10)
